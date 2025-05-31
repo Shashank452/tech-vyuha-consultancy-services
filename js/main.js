@@ -4,16 +4,35 @@ document.addEventListener('DOMContentLoaded', function () {
     const navbar = document.querySelector('.navbar');
 
     if (mobileMenuBtn && navbar) {
-        mobileMenuBtn.addEventListener('click', function () {
+        mobileMenuBtn.addEventListener('click', function (e) {
+            e.stopPropagation(); // Prevent click from bubbling to document
             navbar.classList.toggle('active');
+            mobileMenuBtn.classList.toggle('active'); // Add active state for icon
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!navbar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                navbar.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+            }
         });
     }
 
     // Close mobile menu when clicking on a link
     const navLinks = document.querySelectorAll('.navbar ul li a');
     navLinks.forEach(link => {
-        link.addEventListener('click', function () {
-            navbar.classList.remove('active');
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                navbar.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+            }
         });
     });
 
@@ -89,7 +108,15 @@ document.addEventListener('DOMContentLoaded', function () {
             
             const projects = Array.from(track.children);
             const projectWidth = projects[0].getBoundingClientRect().width;
-            const projectsPerView = Math.min(4, Math.floor(container.offsetWidth / projectWidth));
+            const containerWidth = container.offsetWidth;
+            
+            // Calculate number of projects per view based on screen size
+            let projectsPerView;
+            if (window.innerWidth <= 768) {
+                projectsPerView = 1; // Show only 1 project on mobile
+            } else {
+                projectsPerView = Math.min(4, Math.floor(containerWidth / projectWidth));
+            }
             
             let currentIndex = 0;
             let autoSlideInterval;
@@ -147,8 +174,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     track.style.transition = 'transform 0.5s ease';
                 }
                 
+                // Calculate offset with center alignment for mobile
                 const offset = -currentIndex * projectWidth;
-                track.style.transform = `translateX(${offset}px)`;
+                if (window.innerWidth <= 768) {
+                    // Center single item on mobile
+                    const centerOffset = (containerWidth - projectWidth) / 2;
+                    track.style.transform = `translateX(${offset + centerOffset}px)`;
+                    
+                    // Add active class to current project card
+                    projects.forEach((project, i) => {
+                        project.classList.toggle('active', i === currentIndex);
+                    });
+                } else {
+                    track.style.transform = `translateX(${offset}px)`;
+                    // Remove active class for desktop view
+                    projects.forEach(project => {
+                        project.classList.remove('active');
+                    });
+                }
                 
                 updateDots();
             }
@@ -165,7 +208,10 @@ document.addEventListener('DOMContentLoaded', function () {
             
             // Start auto sliding
             function startAutoSlide() {
-                autoSlideInterval = setInterval(nextSlide, 3000);
+                const screenWidth = window.innerWidth;
+                // Adjust interval based on screen size
+                const interval = screenWidth <= 768 ? 5000 : 3000; // 5 seconds for mobile, 3 seconds for desktop
+                autoSlideInterval = setInterval(nextSlide, interval);
             }
             
             // Stop auto sliding
