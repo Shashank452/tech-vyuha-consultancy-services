@@ -148,9 +148,13 @@ a {
 .hero {
     position: relative;
     height: 100vh;
+    min-height: 600px;
     display: flex;
     align-items: center;
     overflow: hidden;
+    padding: 0 5%;
+    opacity: 0;
+    animation: fadeIn 0.8s ease-out forwards;
 }
 
 .hero-bg-image {
@@ -160,7 +164,14 @@ a {
     height: 100%;
     object-fit: cover;
     z-index: 0;
-    object-position: 75% 50%; /* Position image from right center */
+    object-position: 75% 50%;
+    transition: transform 10s ease-in-out, filter 0.5s ease;
+    filter: brightness(0.8);
+}
+
+.hero:hover .hero-bg-image {
+    transform: scale(1.05);
+    filter: brightness(0.9);
 }
 
 .hero-overlay {
@@ -169,16 +180,26 @@ a {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%);
     z-index: 1;
+    transition: background 0.5s ease;
+}
+
+.hero:hover .hero-overlay {
+    background: linear-gradient(90deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 100%);
 }
 
 .hero-content {
     position: relative;
     z-index: 2;
-    max-width: 800px;
+    max-width: 1200px;
+    width: 90%;
+    margin: 0 auto;
     padding: 0 20px;
     color: white;
+    transform: translateY(30px);
+    opacity: 0;
+    animation: slideUpFadeIn 0.8s ease-out 0.3s forwards;
 }
 
 .hero-content h1 {
@@ -186,6 +207,10 @@ a {
     font-weight: 800;
     line-height: 1.2;
     margin-bottom: 20px;
+    max-width: 800px;
+    transform: translateX(-20px);
+    opacity: 0;
+    animation: slideInLeft 0.8s ease-out 0.5s forwards;
 }
 
 .hero-content h1 span {
@@ -193,6 +218,9 @@ a {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--primary-color);
+    transform: translateX(-20px);
+    opacity: 0;
+    animation: slideInLeft 0.8s ease-out 0.7s forwards;
 }
 
 .hero-subtitle {
@@ -200,6 +228,9 @@ a {
     margin-bottom: 30px;
     max-width: 600px;
     line-height: 1.6;
+    transform: translateX(-20px);
+    opacity: 0;
+    animation: slideInLeft 0.8s ease-out 0.9s forwards;
 }
 
 .hero .btn {
@@ -213,23 +244,81 @@ a {
     transition: all 0.3s ease;
     border: none;
     cursor: pointer;
+    transform: translateY(20px);
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 1.1s forwards;
 }
 
 .hero .btn:hover {
     background-color: var(--secondary-color);
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.hero .btn:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+/* Keyframe Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideUpFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Responsive adjustments */
+@media (max-width: 1200px) {
+    .hero-content h1 {
+        font-size: 3.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.3rem;
+    }
+}
+
 @media (max-width: 768px) {
-    .hero-bg-image {
-        object-position: 75% 50%; /* Keep right side visible on mobile */
+    .hero {
+        height: auto;
+        min-height: 500px;
+        padding: 100px 5% 60px;
     }
     
     .hero-content {
-        max-width: 90%;
-        padding: 20px;
+        width: 100%;
+        padding: 0 15px;
     }
     
     .hero-content h1 {
@@ -241,25 +330,21 @@ a {
     }
     
     .hero-subtitle {
-        font-size: 1.2rem;
-    }
-    
-    .hero .btn {
-        padding: 12px 25px;
-        font-size: 0.9rem;
+        font-size: 1.1rem;
     }
 }
 
 @media (max-width: 480px) {
-    .hero-bg-image {
-        object-position: 75% 50%; /* Keep right side visible on very small screens */
+    .hero {
+        min-height: 400px;
+        padding: 80px 5% 40px;
     }
     
     .hero-content h1 {
         font-size: 2rem;
     }
     
-    .hero-content h1 span {
+    .hero-subtitle {
         font-size: 1rem;
     }
 }
@@ -662,5 +747,126 @@ a {
     
     .hero-content h1 {
         font-size: 2rem;
+    }
+}
+
+/* =================== Alert Notification =================== */
+.alert-container {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    z-index: 9999;
+    max-width: 350px;
+    width: 90%;
+}
+
+.alert {
+    position: relative;
+    padding: 20px 25px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    color: white;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transform: translateX(120%);
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    overflow: hidden;
+}
+
+.alert.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    border-left: 4px solid #2e7d32;
+}
+
+.alert-error {
+    background: linear-gradient(135deg, #f44336, #c62828);
+    border-left: 4px solid #c62828;
+}
+
+.alert-icon {
+    font-size: 24px;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.alert-content {
+    flex-grow: 1;
+}
+
+.alert-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 1.1rem;
+}
+
+.alert-message {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    margin-left: 15px;
+    padding: 5px;
+    line-height: 1;
+}
+
+.alert-close:hover {
+    opacity: 1;
+}
+
+.alert-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    width: 100%;
+    transform-origin: left;
+    animation: progress 5s linear forwards;
+}
+
+@keyframes progress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .alert-container {
+        top: 20px;
+        right: 20px;
+        max-width: 90%;
+    }
+    
+    .alert {
+        padding: 15px 20px;
+    }
+    
+    .alert-icon {
+        font-size: 20px;
+        margin-right: 12px;
+    }
+    
+    .alert-title {
+        font-size: 1rem;
+    }
+    
+    .alert-message {
+        font-size: 0.85rem;
     }
 }

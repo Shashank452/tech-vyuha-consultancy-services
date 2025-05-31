@@ -56,10 +56,88 @@ document.addEventListener('DOMContentLoaded', function () {
     // Form submission via fetch → keeps you on the page and still e-mails via FormSubmit.co
     const projectIdeaForm = document.getElementById('project-idea-form');
     if (projectIdeaForm) {
+        // Create alert container if it doesn't exist
+        let alertContainer = document.querySelector('.alert-container');
+        if (!alertContainer) {
+            alertContainer = document.createElement('div');
+            alertContainer.className = 'alert-container';
+            document.body.appendChild(alertContainer);
+        }
+
+        // Function to show alert
+        function showAlert(type, title, message, duration = 5000) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            
+            const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+            
+            alert.innerHTML = `
+                <i class="fas fa-${icon} alert-icon"></i>
+                <div class="alert-content">
+                    <div class="alert-title">${title}</div>
+                    <div class="alert-message">${message}</div>
+                </div>
+                <button class="alert-close">&times;</button>
+                <div class="alert-progress"></div>
+            `;
+            
+            // Close button functionality
+            const closeBtn = alert.querySelector('.alert-close');
+            closeBtn.addEventListener('click', () => {
+                hideAlert(alert);
+            });
+            
+            // Auto-hide after duration
+            let timeoutId = setTimeout(() => {
+                hideAlert(alert);
+            }, duration);
+            
+            // Pause progress bar on hover
+            alert.addEventListener('mouseenter', () => {
+                const progress = alert.querySelector('.alert-progress');
+                if (progress) {
+                    progress.style.animationPlayState = 'paused';
+                }
+                clearTimeout(timeoutId);
+            });
+            
+            alert.addEventListener('mouseleave', () => {
+                const progress = alert.querySelector('.alert-progress');
+                if (progress) {
+                    progress.style.animationPlayState = 'running';
+                }
+                timeoutId = setTimeout(() => {
+                    hideAlert(alert);
+                }, 2000);
+            });
+            
+            // Add to container and show
+            alertContainer.appendChild(alert);
+            // Trigger reflow to enable animation
+            void alert.offsetWidth;
+            alert.classList.add('show');
+        }
+        
+        // Function to hide alert
+        function hideAlert(alert) {
+            alert.classList.remove('show');
+            alert.addEventListener('transitionend', () => {
+                if (alert.parentNode === alertContainer) {
+                    alertContainer.removeChild(alert);
+                }
+            }, { once: true });
+        }
+
         projectIdeaForm.addEventListener('submit', function (e) {
             e.preventDefault();  // stop the normal navigation
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
-            // package up the fields
+            // Package up the fields
             const formData = new FormData(this);
 
             // POST to FormSubmit
@@ -70,18 +148,35 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(response => {
                 if (response.ok) {
-                    alert('Thank you for your project idea! We will contact you soon.');
+                    showAlert(
+                        'success', 
+                        'Success!', 
+                        'Thank you for your project idea! We will contact you soon.'
+                    );
                     this.reset();
-                    // hide form & reset button
-                    customProjectForm.style.display = 'none';
-                    customProjectBtn.textContent = 'Submit Your Idea';
+                    // Hide form & reset button
+                    const customProjectForm = document.getElementById('custom-project-form');
+                    const customProjectBtn = document.getElementById('custom-project-btn');
+                    if (customProjectForm && customProjectBtn) {
+                        customProjectForm.style.display = 'none';
+                        customProjectBtn.textContent = 'Submit Your Idea';
+                    }
                 } else {
                     return response.json().then(data => Promise.reject(data));
                 }
             })
             .catch(error => {
                 console.error('Form submission error:', error);
-                alert('Oops! There was a problem submitting your form. Please try again later.');
+                showAlert(
+                    'error',
+                    'Error!',
+                    'There was a problem submitting your form. Please try again later.'
+                );
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
             });
         });
     }
